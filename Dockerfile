@@ -18,6 +18,8 @@ WORKDIR /apps/auths
 
 COPY --from=build /apps/auths/dist ./
 
+COPY ./.env ./.env
+
 COPY package*.json ./
 
 RUN npm install --production
