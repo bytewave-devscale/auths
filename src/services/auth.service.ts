@@ -116,6 +116,36 @@ const authService = {
       throw new Error("authorization failed");
     }
   },
+
+  register: async (data: {
+    username: string;
+    email: string;
+    password: string;
+  }) => {
+    const { email, password, username } = data;
+
+    const response = await fetch(`${process.env.API_URI}/api/v1/user`, {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    const newUser = (await response.json()) as {
+      error?: string;
+      user?: { _id: string; username: string; email: string; password: string };
+    };
+
+    if ("error" in newUser) throw new Error(newUser.error);
+
+    const { accessToken, refreshToken } = await authService.create({
+      email,
+      password,
+    });
+
+    return { user: newUser, accessToken, refreshToken };
+  },
 };
 
 export default authService;

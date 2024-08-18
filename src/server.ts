@@ -12,7 +12,7 @@ app.get("/", async (req, res) => {
   res.status(200).send("auth service - bytewaveForum");
 });
 // app.get("/login", (req, res) => res.send("get login"));
-app.use("/api/v1", authRouter);
+app.use("/api/v1/auth", authRouter);
 
 connectDb();
 

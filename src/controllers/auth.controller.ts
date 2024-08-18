@@ -52,6 +52,19 @@ const authController = {
       }
     }
   },
+
+  handleRegister: async (req: Request, res: Response) => {
+    const data = req.body;
+
+    try {
+      const newUserData = await authService.register(data);
+      return res.status(201).json({ user: newUserData });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ error: error.message });
+      }
+    }
+  },
 };
 
 export default authController;
