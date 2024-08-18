@@ -95,7 +95,7 @@ const authService = {
       return;
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error("logout failed");
+        throw new Error("already logout");
       }
     }
   },
@@ -106,8 +106,12 @@ const authService = {
       const authData = await authService.authorize(data);
       const { userId } = authData;
 
-      await authRepository.deleteMany(userId);
-      return;
+      try {
+        await authRepository.deleteMany(userId);
+        return;
+      } catch (error) {
+        throw new Error("already logout");
+      }
     } catch (error) {
       throw new Error("authorization failed");
     }

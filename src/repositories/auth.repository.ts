@@ -21,12 +21,14 @@ const authRepository = {
   },
 
   deleteOne: async (token: string) => {
-    await authModel.findOneAndDelete({ token });
+    const deleted = await authModel.findOneAndDelete({ token });
+    if (!deleted) throw new Error();
+
     return;
   },
 
   deleteMany: async (userId: string) => {
-    await authModel.deleteMany({ userId });
+    const deleted = await authModel.deleteMany({ userId });
     return;
   },
 };
