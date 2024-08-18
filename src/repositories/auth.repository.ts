@@ -19,6 +19,16 @@ const authRepository = {
     const ExistingToken = await authModel.findOne({ token });
     return ExistingToken;
   },
+
+  deleteOne: async (token: string) => {
+    await authModel.findOneAndDelete({ token });
+    return;
+  },
+
+  deleteMany: async (userId: string) => {
+    await authModel.deleteMany({ userId });
+    return;
+  },
 };
 
 export default authRepository;

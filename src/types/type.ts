@@ -8,6 +8,7 @@ export interface IOneUser {
   user: IUser;
 }
 
-export interface IErrorResponse {
-  error: string;
+export interface IUserResponse {
+  error?: string;
+  user?: IUser;
 }

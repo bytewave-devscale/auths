@@ -27,6 +27,18 @@ const authController = {
       }
     }
   },
+
+  handleLogout: async (req: Request, res: Response) => {
+    const data = req.body;
+    try {
+      await authService.logout(data);
+      return res.status(200).json({ message: "logout successfully" });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(500).json({ error: error.message });
+      }
+    }
+  },
 };
 
 export default authController;

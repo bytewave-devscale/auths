@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import authRepository from "../repositories/auth.repository";
-import { IErrorResponse, IOneUser } from "../types/type";
+import { IOneUser, IUserResponse } from "../types/type";
 
 const authService = {
   create: async (data: { email?: string; password?: string }) => {
@@ -17,16 +17,14 @@ const authService = {
       process.env.API_URI + "/api/v1/user/email/" + email
     );
 
-    const responseData = (await response.json()) as IOneUser | IErrorResponse;
+    const responseData = (await response.json()) as IUserResponse;
 
     // check if user exist
     if ("error" in responseData) {
-      const errorResponse = responseData as IErrorResponse;
-      throw new Error(errorResponse.error);
+      throw new Error(responseData.error);
     }
 
-    const userResponse = responseData as IOneUser;
-    const { user } = userResponse;
+    const { user } = responseData as IOneUser;
 
     // check if password match
     const isPasswordMatch = await bcrypt.compare(password, user.password);
@@ -49,7 +47,7 @@ const authService = {
     // save the refresh token in the db
     await authRepository.create({ userId: user._id, token: refreshToken });
 
-    return { user, accessToken, refreshToken };
+    return { userId: user._id, accessToken, refreshToken };
   },
 
   authorize: async (data: { accessToken: string; refreshToken: string }) => {
@@ -62,12 +60,12 @@ const authService = {
       const userDecoded = jwt.verify(
         accessToken,
         process.env.ACCESS_TOKEN_KEY as string
-      );
+      ) as { userId: string };
       // scenario: accessToken valid
-      return { user: userDecoded };
+      return { userId: userDecoded.userId };
     } catch (error) {
       // scenario: accessToken invalid and refreshToken invalid
-      const existingTokeninDb = authRepository.getOne(refreshToken);
+      const existingTokeninDb = await authRepository.getOne(refreshToken);
 
       if (!existingTokeninDb) throw new Error("authorization failed");
 
@@ -76,15 +74,28 @@ const authService = {
         const userDecoded = jwt.verify(
           refreshToken,
           process.env.REFRESH_TOKEN_KEY as string
-        );
+        ) as { userId: string };
         const newAccessToken = jwt.sign(
           userDecoded,
           process.env.ACCESS_TOKEN_KEY as string
         );
 
-        return { user: userDecoded, accessToken: newAccessToken };
+        return { userId: userDecoded.userId, accessToken: newAccessToken };
       } catch (error) {
         throw new Error("authorization failed");
+      }
+    }
+  },
+
+  logout: async (data: { accessToken: string; refreshToken: string }) => {
+    const { refreshToken } = data;
+
+    try {
+      await authRepository.deleteOne(refreshToken);
+      return;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error("logout failed");
       }
     }
   },
