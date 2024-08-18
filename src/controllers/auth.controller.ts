@@ -39,6 +39,19 @@ const authController = {
       }
     }
   },
+
+  handleLogoutAll: async (req: Request, res: Response) => {
+    const data = req.body;
+
+    try {
+      await authService.logoutAll(data);
+      return res.status(200).json({ message: "logout all successfully" });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ error: error.message });
+      }
+    }
+  },
 };
 
 export default authController;

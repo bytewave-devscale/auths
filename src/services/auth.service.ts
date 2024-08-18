@@ -99,6 +99,19 @@ const authService = {
       }
     }
   },
+
+  logoutAll: async (data: { accessToken: string; refreshToken: string }) => {
+    // get userId from authorize
+    try {
+      const authData = await authService.authorize(data);
+      const { userId } = authData;
+
+      await authRepository.deleteMany(userId);
+      return;
+    } catch (error) {
+      throw new Error("authorization failed");
+    }
+  },
 };
 
 export default authService;
