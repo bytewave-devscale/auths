@@ -183,7 +183,7 @@ if both tokens invalid
 
 Here is the example on how you can use authorize in your auth middleware
 
-```
+```typescript
 import { Request, Response, NextFunction } from "express";
 
 export function createAuthMiddleware(tokens: {
@@ -228,6 +228,6 @@ export function createAuthMiddleware(tokens: {
 
 use the middleware :
 
-```
+```typescript
 app.use("/protected", createAuthMiddleware({accessToken:..., refreshToken:...}))
 ```
