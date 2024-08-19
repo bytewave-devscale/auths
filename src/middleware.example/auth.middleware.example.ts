@@ -28,12 +28,11 @@ export function createAuthMiddleware(tokens: {
 
     // if authorize return error
     if ("error" in authData) {
-      // do something if error/authorization fail
+      return res.status(401).json({ error: authData.error });
     }
 
-    // here you have authData containing userId, or userId and new accessToken if accessToken used before is invalid but the refreshToken valid
-
-    // do something ...
+    req.authData = authData;
+    // here you have authData which you can access in next function
 
     next();
   };
