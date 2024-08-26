@@ -186,23 +186,16 @@ Here is the example on how you can use authorize in your auth middleware
 ```typescript
 import { Request, Response, NextFunction } from "express";
 
-export function createAuthMiddleware(tokens: {
-  accessToken: string;
-  refreshToken: string;
-}) {
-  return async function (
-    req: Request & {
-      authData: { error?: string; userId?: string; accessToken?: string };
-    },
-    res: Response,
-    next: NextFunction
-  ) {
-    // get accessToken and refresToken from cookies
-    const { accessToken, refreshToken } = tokens;
+export async function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { accessToken, refreshToken } = req.body.tokens;
 
-    // fetch auth service
     const authResponse = await fetch(
-      "http://auth-service-uri/api/v1/auth/authorize",
+      `${process.env.API_URI}/api/v1/auth/authorize`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -212,21 +205,25 @@ export function createAuthMiddleware(tokens: {
 
     const authData = await authResponse.json();
 
-    // if authorize return error
-    if ("error" in authData) {
+    if (authData.error) {
       return res.status(401).json({ error: authData.error });
     }
 
-    req.authData = authData;
-    // here you have authData which you can access in next function
+    res.locals.authData = authData;
+    // you can access the authData in res.locals
 
     next();
-  };
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(401).json({ error: "authorization failed" });
+    }
+  }
 }
 ```
 
 use the middleware :
 
 ```typescript
-app.use("/protected", createAuthMiddleware({accessToken:..., refreshToken:...}))
+app.use("/protected", authMiddleware);
+app.post("/thread", authMiddleware, handleCreateThread);
 ```
